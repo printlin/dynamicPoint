@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>canvas动态粒子</title>
+		
+	</head>
+	<body>
+		<canvas id="can" width="500" height="500" style="margin: 10px;color:'#fff';">您不支持</canvas>
+		
+		<button onclick="draw()">draw</button>
+		<button onclick="stop()">shop</button>
+		
+		<script type="text/javascript">
+			var arr=new Array();
+			var length=0;
+			var isStop=false;
+			function draw(){
+				var can=document.getElementById("can");
+				var ctx=can.getContext("2d");
+				var width=window.getComputedStyle(can).width;
+				var height=window.getComputedStyle(can).height;
+				width=width.substring(0,width.length-2);
+				height=height.substring(0,height.length-2);
+				alert(width+" "+height);
+				ctx.strokeStyle = "#b3fff6";
+				ctx.fillStyle="#69eada";
+				for(var i=0;i<20;i++){
+					var x=getRandomNub(width);
+					var y=getRandomNub(height);
+					var color=getRandomColor();
+					//ctx.fillStyle=color;
+					ctx.fillRect(x,y,20,20);
+					var newPoint=getRandomPoint(x,y,width,height);
+					arr[length]={x:x,y:y,tox:newPoint.x,toy:newPoint.y,color:color};
+					length++;
+				}
+				
+				var interval=setInterval(function(){
+					if(isStop){
+						window.clearTimeout(interval);
+					}else{
+						ctx.clearRect(0,0,width,height);
+						for(var i=0;i<length;i++){
+							var point=arr[i];
+							
+							if(point.x==point.tox){
+								var newPoint=getRandomPoint(point.x,point.y,width,height);
+								point.tox=newPoint.x;
+								point.toy=newPoint.y;
+							}
+							movePoint(point,ctx);
+						}
+						linkPoint(ctx);
+					}
+					
+				},100);
+				/*for(var i=1;i<=9;i++){
+					ctx.fillStyle="#f"+i+"5"+i+"c"+i;
+					ctx.fillRect(100+30*((i-1)%3),100+30*Math.floor((i-1)/3),30,30);
+				}*/
+			}
+			function linkPoint(ctx){
+				for(var i=0;i<length;i++){
+					var iP=arr[i];
+					for(var j=0;j<length;j++){
+						var jP=arr[j];
+						if(getDistance(iP.x,iP.y,jP.x,jP.y)<150){
+							ctx.beginPath();
+							ctx.moveTo(iP.x,iP.y);
+							ctx.lineTo(jP.x,jP.y);
+							ctx.stroke();
+						}
+					}
+				}
+			}
+			function movePoint(point,ctx){
+				var step=(Math.sqrt((point.toy-point.y)*(point.toy-point.y)+(point.tox-point.x)*(point.tox-point.x)))/10;
+				step=1;
+				var k=(point.toy-point.y)/(point.tox-point.x);
+				var b=point.y-k*point.x;
+				var newX=0;
+				var newY=0;
+				if(point.x<point.tox){
+					newX=point.x+step;
+				}else{
+					newX=point.x-step;
+				}
+				if(newX==point.x){
+					point.x=point.tox;
+					point.y=point.toy;
+					ctx.fillStyle=point.color;
+					ctx.fillRect(point.tox,point.toy,10,10);
+					return;
+				}
+				newY=k*newX+b;
+				point.x=newX;
+				point.y=newY;
+				//ctx.fillStyle=point.color;
+				ctx.fillRect(newX,newY,10,10);
+				/*ctx.beginPath();
+				ctx.moveTo(newX,newY);
+				ctx.lineTo(point.tox,point.toy);
+				ctx.stroke();*/
+			}
+			function getDistance(x1,y1,x2,y2){
+				return Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
+			}
+			function getRandomNub(max){
+				var r=Math.random();
+				return Math.floor(max*r);
+			}
+			function getRandomColor(){
+				return "rgb("+getRandomNub(255)+","+getRandomNub(255)+","+getRandomNub(255)+")";
+			}
+			function getRandomPoint(x,y,wid,hei){
+				var newX=0,newY=0;
+				while(true){
+					newX=getRandomNub(wid);
+					newY=getRandomNub(hei);
+					if(Math.abs(newX-x)<50 || Math.abs(newX-y)<50){
+						
+					}else{
+						break;
+					}
+				}
+				return {x:newX,y:newY};
+			}
+			
+			function stop(){
+				isStop=!isStop;
+			}
+		</script>
+	</body>
+</html>
